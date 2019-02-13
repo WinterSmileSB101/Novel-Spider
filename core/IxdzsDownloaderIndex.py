@@ -161,5 +161,4 @@ class IxdzsDownloader:
 
 
 spider = IxdzsDownloader()
-
 spider.start()
