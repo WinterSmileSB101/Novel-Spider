@@ -1,3 +1,7 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+
 class Chapter:
     'Book Chapter'
     link:str
