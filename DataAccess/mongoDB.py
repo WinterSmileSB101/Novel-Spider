@@ -11,4 +11,10 @@ print(res.inserted_id)
 data = test.find_one({'_id':ObjectId(res.inserted_id)})
 
 print(data)
+print('\n')
+
+results = test.find()
+for da in results:
+    print(da)
+
 
