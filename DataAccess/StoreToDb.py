@@ -30,3 +30,11 @@ class StoreToDB:
         insertRes = bookTable.insert_one(book)
         print(insertRes.inserted_id)
         self._close_()
+
+    def find_all(self, db_name: str, collection: str):
+        db = self._connect_(db_name)
+        collect = db[collection]
+        datas = collect.find()
+        for data in datas:
+            print(data)
+        self._close_()

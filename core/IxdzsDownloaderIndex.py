@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 
+from DataAccess.StoreToDb import StoreToDB
 from Models.BookBase import BookBase
 from Models.BookChapter import Chapter
 
@@ -16,6 +17,7 @@ class IxdzsDownloader:
     url: str
     headers: object
     proxies: object
+    dataAccess: StoreToDB
 
     def __init__(self):
         self.path = '/ditu/a.html'
@@ -30,6 +32,8 @@ class IxdzsDownloader:
             'http': "http://172.22.8.39:3128",
             'https': "http://172.22.8.39:3128"
         }
+
+        dataAccess = StoreToDB()
 
     def start(self):
         print("handle page : "+self.path)
@@ -46,7 +50,7 @@ class IxdzsDownloader:
                 books.append(self.getPageBook(page))
                 print("Process : %.2f%%" % (((allPage.index(page) + 1) / allPage.__len__()) * 100))
             # 拿到了所有书的 title 和 link
-
+            self.dataAccess.store_novel_base_info(books[0],"dbName")
             # finalBooks = []
             # for book in books:
              #   finalBooks.append(self.getPerBook(book))
