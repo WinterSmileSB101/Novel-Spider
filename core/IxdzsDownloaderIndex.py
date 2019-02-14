@@ -4,9 +4,12 @@ import requests
 from bs4 import BeautifulSoup
 import os
 
+import bson.binary
+
 from DataAccess.StoreToDb import StoreToDB
 from Models.BookBase import BookBase
 from Models.BookChapter import Chapter
+from Utils.Helper import Helper
 
 
 class IxdzsDownloader:
@@ -18,6 +21,7 @@ class IxdzsDownloader:
     headers: object
     proxies: object
     dataAccess: StoreToDB
+    inCompany: bool
 
     def __init__(self):
         self.path = '/ditu/a.html'
@@ -32,18 +36,24 @@ class IxdzsDownloader:
             'http': "http://172.22.8.39:3128",
             'https': "http://172.22.8.39:3128"
         }
+        self.inCompany = False
 
-        dataAccess = StoreToDB()
+        self.dataAccess = StoreToDB()
 
     def start(self):
         print("handle page : "+self.path)
         self.url = str.format(self.urlTemplate, host=self.host, path=self.path)
-        res = requests.get(self.url, headers=self.headers, proxies=self.proxies)
+        res = None
+        if(self.inCompany):
+            res = requests.get(self.url, headers=self.headers, proxies=self.proxies)
+        else:
+            res = requests.get(self.url, headers=self.headers)
 
         if(res.status_code==200):
             res.encoding = 'UTF-8'
             pageDom = BeautifulSoup(res.text, features="lxml-xml")
             books = self.parsePageBook(pageDom)
+            self.dataAccess.store_novel_base_info(books[0], "NovelMongo")
             allPage = self.parseAllPage(pageDom)
             allPage.remove(self.path)
             for page in allPage:
@@ -80,7 +90,10 @@ class IxdzsDownloader:
         for titleDom in titleDoms:
             book = BookBase()
             book.link = titleDom.select('a')[0]['href']
-            book.title = titleDom.select('a')[0].text
+            book.name = titleDom.select('a')[0].text
+            md5Info = Helper.md5_hash(book.name, False)
+            book.bookId = md5Info.MD5
+            book.salt = bson.binary.Binary(md5Info.Salt)
             books.append(book)
         return books
 
@@ -93,7 +106,10 @@ class IxdzsDownloader:
         """
         print("handle page : " + page)
         url = str.format(self.urlTemplate, host = self.host, path = page)
-        res = requests.get(url, headers=self.headers, proxies=self.proxies)
+        if(self.inCompany):
+            res = requests.get(url, headers=self.headers, proxies=self.proxies)
+        else:
+            res = requests.get(url, headers=self.headers)
         if(res.status_code==200):
             res.encoding = 'UTF-8'
             pageDom = BeautifulSoup(res.text, features="lxml-xml")
@@ -109,7 +125,10 @@ class IxdzsDownloader:
         :return: book information
         """
         url = str.format(self.urlTemplate, host = self.host, path = book.link)
-        res = requests.get(url, headers=self.headers, proxies=self.proxies)
+        if(self.inCompany):
+            res = requests.get(url, headers=self.headers, proxies=self.proxies)
+        else:
+            res = requests.get(url, headers=self.headers)
         if(res.status_code==200):
             res.encoding = 'UTF-8'
             dom = BeautifulSoup(res.text, features="lxml-xml")
