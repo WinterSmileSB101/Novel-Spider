@@ -28,5 +28,5 @@ class StoreToDB:
         db = self._connect_(db_name)
         bookTable = db.BookBaseInfo
         insertRes = bookTable.insert_one(book)
-        print(insertRes)
+        print(insertRes.inserted_id)
         self._close_()

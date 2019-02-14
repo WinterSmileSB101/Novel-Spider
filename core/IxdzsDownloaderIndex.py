@@ -46,9 +46,10 @@ class IxdzsDownloader:
                 books.append(self.getPageBook(page))
                 print("Process : %.2f%%" % (((allPage.index(page) + 1) / allPage.__len__()) * 100))
             # 拿到了所有书的 title 和 link
-            finalBooks = []
-            for book in books:
-                finalBooks.append(self.getPerBook(book))
+
+            # finalBooks = []
+            # for book in books:
+             #   finalBooks.append(self.getPerBook(book))
 
     def parseAllPage(self, dom: BeautifulSoup):
         """
@@ -63,7 +64,6 @@ class IxdzsDownloader:
             allPages.append(page)
         allPages = ['/ditu/a.html', '/ditu/b.html']
         return allPages
-
 
     def parsePageBook(self, dom: BeautifulSoup):
         """
