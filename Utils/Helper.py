@@ -26,6 +26,18 @@ class Helper:
         md5Info.MD5 = hashlib.md5(md5Info.Salt + target.encode(encoding="UTF-8") + md5Info.Salt).hexdigest()
         return md5Info
 
+    @classmethod
+    def parse_list_to_dicts(self, targets: list):
+        """
+        parse list to dicts
+        :param tragets:
+        :return:
+        """
+        
+        for target in targets:
+
+
+
 
 
 # md51 = Helper.md5_hash("A3部队",True)

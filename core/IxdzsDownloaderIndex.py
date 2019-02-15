@@ -36,7 +36,7 @@ class IxdzsDownloader:
             'http': "http://172.22.8.39:3128",
             'https': "http://172.22.8.39:3128"
         }
-        self.inCompany = False
+        self.inCompany = True
 
         self.dataAccess = StoreToDB()
 
@@ -53,14 +53,17 @@ class IxdzsDownloader:
             res.encoding = 'UTF-8'
             pageDom = BeautifulSoup(res.text, features="lxml-xml")
             books = self.parsePageBook(pageDom)
-            self.dataAccess.store_novel_base_info(books[0], "NovelMongo")
+            # self.dataAccess.store_novel_base_info(books[0], "NovelMongo")
             allPage = self.parseAllPage(pageDom)
             allPage.remove(self.path)
+            print(allPage)
             for page in allPage:
                 books.append(self.getPageBook(page))
                 print("Process : %.2f%%" % (((allPage.index(page) + 1) / allPage.__len__()) * 100))
             # 拿到了所有书的 title 和 link
-            self.dataAccess.store_novel_base_info(books[0],"dbName")
+            dbName = "NovelMongo"
+            self.dataAccess.store_novel_base_infos(books,dbName)
+            self.dataAccess.find_all(dbName,"BookBaseInfo")
             # finalBooks = []
             # for book in books:
              #   finalBooks.append(self.getPerBook(book))
