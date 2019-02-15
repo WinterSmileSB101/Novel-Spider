@@ -4,6 +4,7 @@ import itertools
 import pymongo
 from bson.objectid import ObjectId
 from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
 
 from Models import BookBase
 from Utils.Helper import Helper
@@ -46,19 +47,25 @@ class StoreToDB:
     def store_novel_base_infos(self, books: list, db_name: str):
         db = self._connect_(db_name)
         bookTable = db.BookBaseInfo
-        # condition = {'bookId': Helper.md5_hash(book.name, False).MD5}
-        # print(condition)
-        # record = bookTable.find_one(condition)
-            # insert
-        print(books)
-        insertRes = bookTable.insert_many(books) # 转换list 为 dict
-        print("Insert Success:"+str(insertRes.inserted_ids))
+        for book in books:
+            try:
+                condition = {'bookId': Helper.md5_hash(book.name, False).MD5}
+                record = bookTable.find_one(condition)
+                if(record is None):
+                    bookTable.insert_one(book.__dict__)  # 转换为 dict
+                    print("Insert Success:" + book.name)
+                else:
+                    print("Insert Failed: Duplicate id")
+            except DuplicateKeyError as dke:
+                print("Insert Failed: DuplicateKeyError objectId --\n"+dke)
+
         self._close_()
 
     def find_all(self, db_name: str, collection: str):
         db = self._connect_(db_name)
         collect = db[collection]
         datas = collect.find()
+        print("Find All Mongo: " + db_name + " & Table: " + collection)
         for data in datas:
             print(data)
         self._close_()

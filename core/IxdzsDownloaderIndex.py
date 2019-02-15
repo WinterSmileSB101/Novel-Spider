@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+from datetime import datetime
+import time
+
 import requests
 from bs4 import BeautifulSoup
 import os
@@ -36,7 +39,7 @@ class IxdzsDownloader:
             'http': "http://172.22.8.39:3128",
             'https': "http://172.22.8.39:3128"
         }
-        self.inCompany = True
+        self.inCompany = False
 
         self.dataAccess = StoreToDB()
 
@@ -52,17 +55,17 @@ class IxdzsDownloader:
         if(res.status_code==200):
             res.encoding = 'UTF-8'
             pageDom = BeautifulSoup(res.text, features="lxml-xml")
+            dbName = "NovelMongo"
             books = self.parsePageBook(pageDom)
-            # self.dataAccess.store_novel_base_info(books[0], "NovelMongo")
+            self.dataAccess.store_novel_base_infos(books, dbName)
             allPage = self.parseAllPage(pageDom)
             allPage.remove(self.path)
-            print(allPage)
+            Helper.sleep_while(scends=20)
             for page in allPage:
-                books.append(self.getPageBook(page))
-                print("Process : %.2f%%" % (((allPage.index(page) + 1) / allPage.__len__()) * 100))
-            # 拿到了所有书的 title 和 link
-            dbName = "NovelMongo"
-            self.dataAccess.store_novel_base_infos(books,dbName)
+                pageBooks = self.getPageBook(page)
+                books = books + pageBooks
+                self.dataAccess.store_novel_base_infos(pageBooks, dbName)
+                Helper.sleep_while(scends=20)
             self.dataAccess.find_all(dbName,"BookBaseInfo")
             # finalBooks = []
             # for book in books:
@@ -79,7 +82,7 @@ class IxdzsDownloader:
         for pageDom in allPageDoms:
             page = pageDom['href']
             allPages.append(page)
-        allPages = ['/ditu/a.html', '/ditu/b.html']
+        # allPages = ['/ditu/a.html', '/ditu/b.html']
         return allPages
 
     def parsePageBook(self, dom: BeautifulSoup):
@@ -98,7 +101,7 @@ class IxdzsDownloader:
             book.bookId = md5Info.MD5
             book.salt = bson.binary.Binary(md5Info.Salt)
             books.append(book)
-        return books
+        return list(books)
 
 
     def getPageBook(self, page:str):

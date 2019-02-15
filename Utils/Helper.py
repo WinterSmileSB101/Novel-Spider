@@ -1,5 +1,7 @@
 import os
 import hashlib
+import time
+from datetime import datetime
 
 from Utils.Models.Md5Info import Md5Info
 
@@ -27,15 +29,15 @@ class Helper:
         return md5Info
 
     @classmethod
-    def parse_list_to_dicts(self, targets: list):
+    def sleep_while(self, scends:int = 20):
         """
-        parse list to dicts
-        :param tragets:
+        sleep for a while
+        :param scends: how long time you want sleep
         :return:
         """
-        
-        for target in targets:
-
+        print("Wait for {time}s....\nNow is: ".format(time=scends) + datetime.now().strftime("%Y-%m-%d %H:%M:%S %f"))
+        time.sleep(scends)  # sleep 20s for avoid anti spider
+        print("Now continue work...")
 
 
 
