@@ -1,23 +1,33 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 import itertools
+from logging import RootLogger
+
 import pymongo
 from bson.objectid import ObjectId
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 
 from Models import BookBase
+from Utils import Logger
 from Utils.Helper import Helper
 
 
 class StoreToDB:
+    """
+    start mongo db in docker:
+    docker pull mongo
+    docker run --name cool-mongo -p 27017:27017 -d mongo
+    """
     host: str
     port: int
     client: MongoClient
+    logger: RootLogger
 
     def __init__(self):
         self.host = 'localhost'
         self.port = 27017
+        self.logger = Logger.get_info_logger(name='dbinsert')
 
     def _connect_(self, db_name: str):
         self.client = pymongo.MongoClient(host=self.host, port=self.port)
@@ -37,11 +47,11 @@ class StoreToDB:
             # insert
             print(book.__dict__)
             insertRes = bookTable.insert_one(book.__dict__)
-            print("Insert Success:"+str(insertRes.inserted_id))
+            self.logger.info("Insert Success: "+str(insertRes.inserted_id))
         else:
             # update
             insertRes = bookTable.update(condition, book.__dict__)
-            print("Update Success:"+str(insertRes))
+            self.logger.info("Update Success: "+str(insertRes))
         self._close_()
 
     def store_novel_base_infos(self, books: list, db_name: str):
@@ -53,11 +63,11 @@ class StoreToDB:
                 record = bookTable.find_one(condition)
                 if(record is None):
                     bookTable.insert_one(book.__dict__)  # 转换为 dict
-                    print("Insert Success:" + book.name)
+                    self.logger.info("Insert Success:" + book.name)
                 else:
-                    print("Insert Failed: Duplicate id")
+                    self.logger.warning("Insert Failed: Duplicate id --" +book.name)
             except DuplicateKeyError as dke:
-                print("Insert Failed: DuplicateKeyError objectId --\n"+dke)
+                self.logger.error("Insert Failed: DuplicateKeyError objectId --\n"+dke)
 
         self._close_()
 

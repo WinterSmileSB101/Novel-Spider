@@ -39,7 +39,7 @@ class IxdzsDownloader:
             'http': "http://172.22.8.39:3128",
             'https': "http://172.22.8.39:3128"
         }
-        self.inCompany = False
+        self.inCompany = True
 
         self.dataAccess = StoreToDB()
 
@@ -65,7 +65,11 @@ class IxdzsDownloader:
                 pageBooks = self.getPageBook(page)
                 books = books + pageBooks
                 self.dataAccess.store_novel_base_infos(pageBooks, dbName)
-                Helper.sleep_while(scends=20)
+                percent = ((allPage.index(page)+1)/allPage.__len__())*100
+                print("Process : %.2f%%" % percent)
+                if(percent<100):
+                    Helper.sleep_while(scends=20)
+
             self.dataAccess.find_all(dbName,"BookBaseInfo")
             # finalBooks = []
             # for book in books:
